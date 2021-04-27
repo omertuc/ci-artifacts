@@ -69,6 +69,18 @@ prechecks() {
     fi
 }
 
+extract_entitlement_key() {
+    resource=$1
+    key=$2
+    RESOURCE_NAME=50-entitlement-pem
+    cat "$resource" \
+        | yq . \
+        | jq -r -c 'select(.metadata.name=="'${RESOURCE_NAME}'")|.spec.config.storage.files[0].contents.source' \
+        | sed 's|data:text/plain;charset=utf-8;base64,||g' \
+        | base64 -d \
+        > "$key"
+}
+
 entitle() {
     echo "Testing if the cluster is already entitled ..."
     if toolbox/entitlement/test.sh --no-inspect; then
@@ -97,9 +109,16 @@ entitle() {
         echo "INFO: no entitlement resource provided (ENTITLEMENT_RESOURCES)"
     elif [ ! -e "$ENTITLEMENT_RESOURCES" ]; then
         echo "INFO: entitlement resource file doesn't exist (ENTITLEMENT_RESOURCES=$ENTITLEMENT_RESOURCES)"
-     else
-        echo "Deploying the entitlement from resources inside ${ENTITLEMENT_RESOURCES}"
-        toolbox/entitlement/deploy.sh --machine-configs ${ENTITLEMENT_RESOURCES}
+    else
+        ENTITLEMENT_KEY=/tmp/key.pem
+        extract_entitlement_key $ENTITLEMENT_RESOURCES $ENTITLEMENT_KEY
+
+        if ! toolbox/entitlement/test_in_cluster.sh "${ENTITLEMENT_KEY}"; then
+            echo "FATAL: entitlement key not working (tested in a cluster pod)"
+            exit 1
+        fi
+
+        toolbox/entitlement/deploy.sh --pem "${ENTITLEMENT_KEY}"
         entitlement_deployed=1
     fi
 
