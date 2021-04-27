@@ -9,26 +9,31 @@ data:
     set -o errexit;
     set -o pipefail;
     set -x
-
+    env
     echo "# Kernel version"
     uname -a
-    echo
 
+    echo
     echo "# Host OS Release"
     cat /etc-host/os-release
     source /etc-host/os-release
-    echo
 
-    echo "# md5sum of host entitlement files (debug)"
-    if md5sum /etc/rhsm-host/rhsm.conf /etc/pki/entitlement-host/entitlement{,-key}.pem; then
-      echo "# INFO: host entitlement files found"
+    if [[ "${REMOVE_HOST_ENTITLEMENT:-}" == "1" ]]; then
+       echo "# INFO: removing host entitlement links (REMOVE_HOST_ENTITLEMENT=${REMOVE_HOST_ENTITLEMENT})"
+       rm -fv /etc/pki/entitlement-host /etc/rhsm-host
     else
-      echo "#"
-      echo "# WARNING: host entitlement files missing"
-      echo "#"
+      echo
+      echo "# md5sum of host entitlement files (debug)"
+      if md5sum /etc/rhsm-host/rhsm.conf /etc/pki/entitlement-host/entitlement{,-key}.pem; then
+        echo "# INFO: host entitlement files found"
+      else
+        echo "#"
+        echo "# WARNING: host entitlement files missing"
+        echo "#"
+      fi
     fi
-    echo
 
+    echo
     echo "# md5sum of pod entitlement files (debug)"
     if md5sum /etc/rhsm/rhsm.conf /etc/pki/entitlement/entitlement{,-key}.pem; then
       echo "# INFO: pod entitlement files found"
@@ -37,8 +42,16 @@ data:
       echo "# INFO: pod entitlement files missing"
       echo "#"
     fi
-    echo
 
+    if [[ "${RHEL_VERSION}" == "8.4" ]]; then
+      echo
+      echo "# enable OCP 4.8 / RHEL 8.4 beta repository"
+      dnf config-manager --add-repo https://cdn.redhat.com/content/beta/rhel8/8/x86_64/baseos/os/
+    else
+      echo "# INFO: no need to enable RHEL beta repositories on ${RHEL_VERSION}"
+    fi
+
+    echo
     echo "# test EUS and OCP repositories (debug)"
 
     echo "${RHEL_VERSION}" > /etc/yum/vars/releasever
@@ -63,3 +76,4 @@ data:
     echo "# ensure that RH repositories can be accessed"
 
     dnf list kernel-core --showduplicates
+    # done
