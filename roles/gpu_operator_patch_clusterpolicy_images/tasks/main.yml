@@ -1,0 +1,121 @@
+- name: Define hook input/output files
+  block:
+  - name: Define input file
+    set_fact:
+      input_clusterpolicy: "{{ artifact_extra_logs_dir }}/gpu_operator_clusterpolicy.json"
+
+  - name: Define output file
+    set_fact:
+      output_clusterpolicy: "{{ artifact_extra_logs_dir }}/gpu_operator_clusterpolicy_patched.json"
+
+- name: Get all tags from the sample ClusterPolicy, and override the tags specified by the user
+  block:
+  - name: Get DCGM Exporter tag
+    command: jq -r '.spec.dcgmExporter.version' {{ input_clusterpolicy }}
+    register: example_output
+
+  - name: Set DCGM Exporter tag
+    when: not dcgm_exporter_tag
+    set_fact:
+      dcgm_exporter_tag: "{{ example_output.stdout }}"
+
+  - name: Get Device Plugin tag
+    command: jq -r '.spec.devicePlugin.version' {{ input_clusterpolicy }}
+    register: example_output
+
+  - name: Set Device Plugin tag
+    when: not device_plugin_tag
+    set_fact:
+      device_plugin_tag: "{{ example_output.stdout }}"
+
+  - name: Get Driver tag
+    command: jq -r '.spec.driver.version' {{ input_clusterpolicy }}
+    register: example_output
+
+  - name: Set Driver tag
+    when: not driver_tag
+    set_fact:
+      driver_tag: "{{ example_output.stdout }}"
+
+  - name: Get GFD tag
+    command: jq -r '.spec.gfd.version' {{ input_clusterpolicy }}
+    register: example_output
+
+  - name: Set GFD tag
+    when: not gpu_feature_discovery_tag
+    set_fact:
+      gpu_feature_discovery_tag: "{{ example_output.stdout }}"
+
+  - name: Get Operator tag
+    command: jq -r '.spec.operator.version' {{ input_clusterpolicy }}
+    register: example_output
+
+  - name: Set Operator tag
+    when: not operator_tag
+    set_fact:
+      operator_tag: "{{ example_output.stdout }}"
+
+  - name: Get Toolkit tag
+    command: jq -r '.spec.toolkit.version' {{ input_clusterpolicy }}
+    register: example_output
+
+  - name: Set Toolkit tag
+    when: not container_toolkit_tag
+    set_fact:
+      container_toolkit_tag: "{{ example_output.stdout }}"
+
+- name: Patch operand images
+  shell: >
+    jq \
+    --arg "DCGM_EXPORTER_IMAGE" "{{ dcgm_exporter_image }}" \
+    --arg "DCGM_EXPORTER_REPOSITORY" "{{ dcgm_exporter_repository }}" \
+    --arg "DCGM_EXPORTER_TAG" "{{ dcgm_exporter_tag }}" \
+    --arg "DEVICE_PLUGIN_IMAGE" "{{ device_plugin_image }}" \
+    --arg "DEVICE_PLUGIN_REPOSITORY" "{{ device_plugin_repository }}" \
+    --arg "DEVICE_PLUGIN_TAG" "{{ device_plugin_tag }}" \
+    --arg "DRIVER_IMAGE" "{{ driver_image }}" \
+    --arg "DRIVER_REPOSITORY" "{{ driver_repository }}" \
+    --arg "DRIVER_TAG" "{{ driver_tag }}" \
+    --arg "GFD_IMAGE" "{{ gpu_feature_discovery_image }}" \
+    --arg "GFD_REPOSITORY" "{{ gpu_feature_discovery_repository }}" \
+    --arg "GFD_TAG" "{{ gpu_feature_discovery_tag }}" \
+    --arg "OPERATOR_IMAGE" "{{ operator_image }}" \
+    --arg "OPERATOR_REPOSITORY" "{{ operator_repository }}" \
+    --arg "OPERATOR_TAG" "{{ operator_tag }}" \
+    --arg "TOOLKIT_IMAGE" "{{ container_toolkit_image }}" \
+    --arg "TOOLKIT_REPOSITORY" "{{ container_toolkit_repository }}" \
+    --arg "TOOLKIT_TAG" "{{ container_toolkit_tag }}" \
+      '. * {
+             "spec": {
+               "dcgmExporter": {
+                 "image": $DCGM_EXPORTER_IMAGE,
+                 "repository": $DCGM_EXPORTER_REPOSITORY,
+                 "version": $DCGM_EXPORTER_TAG
+               },
+               "devicePlugin": {
+                 "image": $DEVICE_PLUGIN_IMAGE,
+                 "repository": $DEVICE_PLUGIN_REPOSITORY,
+                 "version": $DEVICE_PLUGIN_TAG
+               },
+               "driver": {
+                 "image": $DRIVER_IMAGE,
+                 "repository": $DRIVER_REPOSITORY,
+                 "version": $DRIVER_TAG
+               },
+               "gfd": {
+                 "image": $GFD_IMAGE,
+                 "repository": $GFD_REPOSITORY,
+                 "version": $GFD_TAG
+               },
+               "operator": {
+                 "image": $OPERATOR_IMAGE,
+                 "repository": $OPERATOR_REPOSITORY,
+                 "version": $OPERATOR_TAG
+               },
+               "toolkit": {
+                 "image": $TOOLKIT_IMAGE,
+                 "repository": $TOOLKIT_REPOSITORY,
+                 "version": $TOOLKIT_TAG
+               },
+             }
+           }' {{ input_clusterpolicy }} > {{ output_clusterpolicy }}

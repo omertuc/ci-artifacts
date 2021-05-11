@@ -43,4 +43,8 @@ else
     echo "Deploying the GPU Operator from OperatorHub using the latest version available."
 fi
 
+ANSIBLE_OPTS="${ANSIBLE_OPTS} -e patch_clusterpolicy_role=roles/gpu_operator_patch_clusterpolicy_images"
+ANSIBLE_OPTS="${ANSIBLE_OPTS} -e driver_repository=image-registry.openshift-image-registry.svc:5000/operands"
+ANSIBLE_OPTS="${ANSIBLE_OPTS} -e driver_tag=sha256:c7276dab18146dd0af91c9e81b09686ee7e0762b514ece7acd8e901517e7aab3"
+
 exec ansible-playbook ${ANSIBLE_OPTS} playbooks/gpu_operator_deploy_from_operatorhub.yml

@@ -1,0 +1,23 @@
+dcgm_exporter_image: "dcgm-exporter"
+dcgm_exporter_repository: "nvcr.io/nvidia/k8s"
+dcgm_exporter_tag: ""
+
+device_plugin_image: "k8s-device-plugin"
+device_plugin_repository: "nvcr.io/nvidia"
+device_plugin_tag: ""
+
+driver_image: "driver"
+driver_repository: "nvcr.io/nvidia"
+driver_tag: ""
+
+gpu_feature_discovery_image: "gpu-feature-discovery"
+gpu_feature_discovery_repository: "nvcr.io/nvidia"
+gpu_feature_discovery_tag: ""
+
+operator_image: "cuda-sample"
+operator_repository: "nvcr.io/nvidia/k8s"
+operator_tag: ""
+
+container_toolkit_image: "container-toolkit"
+container_toolkit_repository: "nvcr.io/nvidia/k8s"
+container_toolkit_tag: ""
