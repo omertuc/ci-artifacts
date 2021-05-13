@@ -53,12 +53,11 @@
     "{{ artifact_extra_logs_dir }}"/gpu_operator_clusterpolicy_patched.json
   when: not patch_clusterpolicy_role
 
-- name: lol
-  meta: end_play
-
+#- name: lol
+#  meta: end_play
 - block:
   - name: Create the clusterPolicy CR for the GPU Operator
-    command: oc apply -f "{{ artifact_extra_logs_dir }}/gpu_operator_clusterpolicy.json"
+    command: oc apply -f "{{ artifact_extra_logs_dir }}/gpu_operator_clusterpolicy_patched.json"
     register: test_clusterpolicy_cr
     until: test_clusterpolicy_cr.rc != 1
     retries: 20
