@@ -1,5 +1,4 @@
 ---
 build_image_driver_git_repo: "https://gitlab.com/nvidia/container-images/driver.git"
 build_image_driver_git_ref: "master"
-build_image_driver_image_tag: "driver"
-build_image_driver_namespace: "ci-artifacts-operand-build"
+build_image_driver_namespace: "gpu-operator-resources"

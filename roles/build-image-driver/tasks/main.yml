@@ -14,7 +14,7 @@
      | oc apply -f-
 
 - name: Search if the CI image exists
-  command: oc get imagestreamtag -n "{{ build_image_driver_namespace }}" "operands:{{ build_image_driver_image_tag }}" -oname --ignore-not-found
+  command: oc get imagestreamtag -n "{{ build_image_driver_namespace }}" "driver:latest-rhcos4.7" -oname --ignore-not-found
   register: has_ci_image
 
 - name: Build the CI image
@@ -30,7 +30,6 @@
        | sed 's|{{ '{{' }} build_image_driver_namespace {{ '}}' }}|{{ build_image_driver_namespace }}|' \
        | sed 's|{{ '{{' }} build_image_driver_git_repo {{ '}}' }}|{{ build_image_driver_git_repo }}|' \
        | sed 's|{{ '{{' }} build_image_driver_git_ref {{ '}}' }}|{{ build_image_driver_git_ref }}|' \
-       | sed 's|{{ '{{' }} build_image_driver_image_tag {{ '}}' }}|{{ build_image_driver_image_tag }}|' \
        | oc apply -f-
     args:
       warn: false # don't warn about using sed here
@@ -40,4 +39,4 @@
 
 - name: Ensure that the image exists
   command: oc get imagestreamtag -n "{{ build_image_driver_namespace }}" \
-    "operands:{{ build_image_driver_image_tag }}" -oname --ignore-not-found
+    "latest-rhcos4.7" -oname --ignore-not-found

@@ -51,9 +51,16 @@ ANSIBLE_OPTS="${ANSIBLE_OPTS} -e patch_clusterpolicy_role=roles/gpu_operator_pat
 #  }
 #}'
 
+#exec ansible-playbook ${ANSIBLE_OPTS} -e '{
+#  "driver": {
+#    "version": "sha256:af76fb2fd2a30cb809c7e6912a3c75867e24d381dcdefb2e2e44d5a62f36c4c3",
+#    "repository": "image-registry.openshift-image-registry.svc:5000/ci-artifacts-operand-build"
+#  }
+#}' playbooks/gpu_operator_deploy_from_operatorhub.yml
+
 exec ansible-playbook ${ANSIBLE_OPTS} -e '{
   "driver": {
-    "version": "sha256:c7276dab18146dd0af91c9e81b09686ee7e0762b514ece7acd8e901517e7aab3",
-    "repository": "image-registry.openshift-image-registry.svc:5000/operands"
+    "version": "latest",
+    "repository": "image-registry.openshift-image-registry.svc:5000/ci-artifacts-operand-build"
   }
 }' playbooks/gpu_operator_deploy_from_operatorhub.yml

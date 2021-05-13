@@ -9,7 +9,7 @@ spec:
   output:
     to:
       kind: ImageStreamTag
-      name: operands:{{ build_image_driver_image_tag }}
+      name: driver:latest-rhcos4.7
       namespace: "{{ build_image_driver_namespace }}"
   resources: {}
   source:
