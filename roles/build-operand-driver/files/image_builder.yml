@@ -3,20 +3,20 @@ kind: BuildConfig
 metadata:
   labels:
     app: ci-artifacts
-  name: image-builder
-  namespace: "{{ build_image_namespace }}"
+  name: "{{ build_operand_imagestream_name }}"
+  namespace: "{{ build_operand_namespace }}"
 spec:
   output:
     to:
       kind: ImageStreamTag
-      name: dcgm-exporter:latest-rhcos4.7
-      namespace: "{{ build_image_namespace }}"
+      name: "{{ build_operand_imagestream_name }}:latest-rhcos4.7"
+      namespace: "{{ build_operand_namespace }}"
   resources: {}
   source:
     type: Git
     git:
-      uri: "{{ build_image_git_repo }}" # set by `build.yaml` ansible script
-      ref: "{{ build_image_git_ref }}" # set by `build.yaml` ansible script
+      uri: "{{ build_operand_git_repo }}"
+      ref: "{{ build_operand_git_ref }}"
     contextDir: ./rhel8
   triggers:
   - type: "ConfigChange"

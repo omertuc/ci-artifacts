@@ -29,4 +29,4 @@ source ${THIS_DIR}/../_common.sh
 #
 #export LOCAL_CI_COMMAND="$ci_command"
 
-exec ansible-playbook ${ANSIBLE_OPTS} playbooks/build-operand-dcgm-exporter.yml
+exec ansible-playbook ${ANSIBLE_OPTS} playbooks/build-operand-gfd.yml

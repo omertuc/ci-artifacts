@@ -25,9 +25,16 @@ spec:
     dockerStrategy:
       buildArgs:
         - name: "GOLANG_VERSION"
-          value: "1.14.2"
-        - name: "DCGM_VERSION"
-          value: "2.1.8"
+          value: "1.16.4"
         - name: "VERSION"
-          value: "2.4.0-rc.2"
+          value: "1.5.0"
+        - name: "LIBNVIDIA_CONTAINER_VERSION"
+          value: "1.4.0"
+        - name: "NVIDIA_CONTAINER_TOOLKIT_VERSION"
+          value: "1.5.0"
+        - name: "NVIDIA_CONTAINER_RUNTIME_VERSION"
+          value: "3.5.0"
       dockerfilePath: docker/Dockerfile.ubi8
+      from:
+        kind: DockerImage
+        name: nvcr.io/nvidia/cuda:11.2.1-base-ubi8

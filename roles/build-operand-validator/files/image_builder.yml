@@ -24,10 +24,10 @@ spec:
     type: Docker
     dockerStrategy:
       buildArgs:
-        - name: "GOLANG_VERSION"
-          value: "1.14.2"
-        - name: "DCGM_VERSION"
-          value: "2.1.8"
-        - name: "VERSION"
-          value: "2.4.0-rc.2"
-      dockerfilePath: docker/Dockerfile.ubi8
+        - name: "BASE_DIST"
+          value: "ubi8"
+        - name: "CUDA_VER"
+          value: "11.2.1"
+        - name: "SAMPLE_NAME"
+          value: "vectorAdd"
+      dockerfilePath: cuda/Dockerfile.ubi8

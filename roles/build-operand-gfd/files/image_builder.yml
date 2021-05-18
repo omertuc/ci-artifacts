@@ -24,10 +24,6 @@ spec:
     type: Docker
     dockerStrategy:
       buildArgs:
-        - name: "GOLANG_VERSION"
-          value: "1.14.2"
-        - name: "DCGM_VERSION"
-          value: "2.1.8"
-        - name: "VERSION"
-          value: "2.4.0-rc.2"
-      dockerfilePath: docker/Dockerfile.ubi8
+        - name: "GFD_VERSION"
+          value: "v0.4.1-2-g77e0d08"
+      dockerfilePath: Dockerfile

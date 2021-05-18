@@ -1,2 +1,2 @@
 ---
-build_image_namespace: "gpu-operator-resources"
+build_operand_namespace: "gpu-operator-resources"

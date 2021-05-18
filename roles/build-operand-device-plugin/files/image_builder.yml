@@ -25,9 +25,7 @@ spec:
     dockerStrategy:
       buildArgs:
         - name: "GOLANG_VERSION"
-          value: "1.14.2"
-        - name: "DCGM_VERSION"
-          value: "2.1.8"
-        - name: "VERSION"
-          value: "2.4.0-rc.2"
+          value: "1.15.8"
+        - name: "PLUGIN_VERSION"
+          value: "0.9.0"
       dockerfilePath: docker/Dockerfile.ubi8
