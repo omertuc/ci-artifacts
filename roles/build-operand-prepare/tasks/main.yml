@@ -1,0 +1,14 @@
+---
+- name: Apply the namespace manifest
+  shell:
+    set -o pipefail;
+    cat "{{ build_image_namespace_deployment }}" \
+     | sed 's|{{ '{{' }} build_image_namespace {{ '}}' }}|{{ build_image_namespace }}|' \
+     | oc apply -f-
+
+- name: Apply the imagestream manifest
+  shell:
+    set -o pipefail;
+    cat "{{ build_image_imagestream }}" \
+     | sed 's|{{ '{{' }} build_image_namespace {{ '}}' }}|{{ build_image_namespace }}|' \
+     | oc apply -f-

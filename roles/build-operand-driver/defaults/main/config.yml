@@ -1,0 +1,4 @@
+---
+build_image_git_repo: "https://gitlab.com/nvidia/container-images/driver.git"
+build_image_git_ref: "master"
+build_image_namespace: "gpu-operator-resources"

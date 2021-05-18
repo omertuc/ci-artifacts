@@ -1,4 +1,0 @@
----
-build_image_driver_namespace_deployment: roles/build-image-driver/files/namespace.yml
-build_image_driver_imagestream: roles/build-image-driver/files/imagestream.yml
-build_image_driver_image_builder: roles/build-image-driver/files/image_builder.yml

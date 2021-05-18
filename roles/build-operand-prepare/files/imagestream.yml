@@ -1,0 +1,8 @@
+kind: ImageStream
+apiVersion: v1
+metadata:
+  name: driver
+  namespace: "{{ build_image_namespace }}"
+  labels:
+    app: ci-artifacts
+spec: {}

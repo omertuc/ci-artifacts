@@ -1,0 +1,3 @@
+---
+build_image_driver_namespace_deployment: roles/build-operand-prepare/files/namespace.yml
+build_image_driver_imagestream: roles/build-operand-prepare/files/imagestream.yml

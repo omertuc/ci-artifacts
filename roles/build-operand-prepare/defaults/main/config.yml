@@ -1,0 +1,2 @@
+---
+build_image_namespace: "gpu-operator-resources"

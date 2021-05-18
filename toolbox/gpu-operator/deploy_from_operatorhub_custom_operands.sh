@@ -43,4 +43,10 @@ else
     echo "Deploying the GPU Operator from OperatorHub using the latest version available."
 fi
 
-exec ansible-playbook ${ANSIBLE_OPTS} playbooks/gpu_operator_deploy_from_operatorhub.yml
+exec ansible-playbook ${ANSIBLE_OPTS} -e '{
+  "patch_clusterpolicy_role": "roles/gpu_operator_patch_clusterpolicy_images",
+  "driver": {
+    "version": "sha256:b2cf76afc0c45fee83b104b2dd4410c8c53d9c62c80e7e1b011e0252f273e3ee",
+    "repository": "image-registry.openshift-image-registry.svc:5000/gpu-operator-resources"
+  }
+}' playbooks/gpu_operator_deploy_from_operatorhub.yml
