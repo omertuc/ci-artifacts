@@ -9,7 +9,7 @@ spec:
   output:
     to:
       kind: ImageStreamTag
-      name: "{{ build_operand_imagestream_name }}:latest-rhcos4.7"
+      name: "{{ build_operand_imagestream_name }}:latest"
       namespace: "{{ build_operand_namespace }}"
   resources: {}
   source:

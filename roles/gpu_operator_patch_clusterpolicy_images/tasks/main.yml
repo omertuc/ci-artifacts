@@ -87,7 +87,7 @@
                  "devicePlugin": $DEVICE_PLUGIN,
                  "driver": $DRIVER,
                  "gfd": $GFD,
-                 "operator": { "validator": { $OPERATOR_VALIDATOR } },
+                 "operator": { "validator": $OPERATOR_VALIDATOR },
                  "toolkit": $TOOLKIT,
                }
              }' {{ input_clusterpolicy }} > {{ output_clusterpolicy }}

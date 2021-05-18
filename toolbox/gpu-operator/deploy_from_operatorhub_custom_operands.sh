@@ -45,8 +45,28 @@ fi
 
 exec ansible-playbook ${ANSIBLE_OPTS} -e '{
   "patch_clusterpolicy_role": "roles/gpu_operator_patch_clusterpolicy_images",
+  "dcgm_exporter": {
+    "version": "latest",
+    "repository": "image-registry.openshift-image-registry.svc:5000/gpu-operator-resources"
+  },
+  "device_plugin": {
+    "version": "latest",
+    "repository": "image-registry.openshift-image-registry.svc:5000/gpu-operator-resources"
+  },
   "driver": {
-    "version": "sha256:b2cf76afc0c45fee83b104b2dd4410c8c53d9c62c80e7e1b011e0252f273e3ee",
+    "version": "latest",
+    "repository": "image-registry.openshift-image-registry.svc:5000/gpu-operator-resources"
+  },
+  "gpu_feature_discovery": {
+    "version": "latest",
+    "repository": "image-registry.openshift-image-registry.svc:5000/gpu-operator-resources"
+  },
+  "operator_validator": {
+    "version": "latest",
+    "repository": "image-registry.openshift-image-registry.svc:5000/gpu-operator-resources"
+  },
+  "container_toolkit": {
+    "version": "latest",
     "repository": "image-registry.openshift-image-registry.svc:5000/gpu-operator-resources"
   }
 }' playbooks/gpu_operator_deploy_from_operatorhub.yml
