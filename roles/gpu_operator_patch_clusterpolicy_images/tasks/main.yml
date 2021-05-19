@@ -57,9 +57,9 @@
     register: example_output
 
   - name: Set Operator tag
-    when: not operator_validator["version"]
+    when: not validator["version"]
     set_fact:
-      operator_validator:
+      validator:
         version: "{{ example_output.stdout }}"
 
   - name: Get Toolkit tag
@@ -79,7 +79,7 @@
       --argjson "DEVICE_PLUGIN" '{{ device_plugin | to_json }}' \
       --argjson "DRIVER" '{{ driver | to_json }}' \
       --argjson "GFD" '{{ gpu_feature_discovery | to_json }}' \
-      --argjson "OPERATOR_VALIDATOR" '{{ operator_validator | to_json }}' \
+      --argjson "VALIDATOR" '{{ validator | to_json }}' \
       --argjson "TOOLKIT" '{{ container_toolkit | to_json }}' \
         '. * {
                "spec": {
@@ -87,7 +87,7 @@
                  "devicePlugin": $DEVICE_PLUGIN,
                  "driver": $DRIVER,
                  "gfd": $GFD,
-                 "operator": { "validator": $OPERATOR_VALIDATOR },
                  "toolkit": $TOOLKIT,
+                 "validator": $VALIDATOR
                }
              }' {{ input_clusterpolicy }} > {{ output_clusterpolicy }}

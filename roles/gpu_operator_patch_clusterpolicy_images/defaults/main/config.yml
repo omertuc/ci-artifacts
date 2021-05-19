@@ -18,7 +18,7 @@ gpu_feature_discovery:
   repository: "nvcr.io/nvidia"
   version: ""
 
-operator_validator:
+validator:
   image: "cuda-sample"
   repository: "nvcr.io/nvidia/k8s"
   version: ""

@@ -44,6 +44,7 @@ else
 fi
 
 exec ansible-playbook ${ANSIBLE_OPTS} -e '{
+  "gpu_operator_deploy_from": "bundle",
   "patch_clusterpolicy_role": "roles/gpu_operator_patch_clusterpolicy_images",
   "dcgm_exporter": {
     "version": "latest",
@@ -61,7 +62,7 @@ exec ansible-playbook ${ANSIBLE_OPTS} -e '{
     "version": "latest",
     "repository": "image-registry.openshift-image-registry.svc:5000/gpu-operator-resources"
   },
-  "operator_validator": {
+  "validator": {
     "version": "latest",
     "repository": "image-registry.openshift-image-registry.svc:5000/gpu-operator-resources"
   },
