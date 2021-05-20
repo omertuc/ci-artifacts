@@ -2,4 +2,4 @@
 build_operand_git_repo: "https://gitlab.com/nvidia/container-toolkit/container-config.git"
 build_operand_git_ref: "master"
 build_operand_namespace: "gpu-operator-resources"
-build_operand_imagestream_name: "toolkit"
+build_operand_imagestream_name: "container-toolkit"

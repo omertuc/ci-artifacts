@@ -1,6 +1,6 @@
 ---
 - name: Search if the CI image exists
-  command: oc get imagestreamtag -n "{{ build_operand_namespace }}" "{{ build_operand_imagestream_name }}:latest-rhcos4.7" -oname --ignore-not-found
+  command: oc get imagestreamtag -n "{{ build_operand_namespace }}" "{{ build_operand_imagestream_name }}:latest" -oname --ignore-not-found
   register: has_ci_image
 
 - name: Build the CI image
@@ -25,4 +25,4 @@
     shell: oc logs -f "buildconfig/{{ build_operand_imagestream_name }}" -n "{{ build_operand_namespace }}" > /dev/null
 
 - name: Ensure that the image exists
-  command: oc get imagestreamtag -n "{{ build_operand_namespace }}" "{{ build_operand_imagestream_name }}:latest-rhcos4.7" -oname --ignore-not-found
+  command: oc get imagestreamtag -n "{{ build_operand_namespace }}" "{{ build_operand_imagestream_name }}:latest" -oname --ignore-not-found
