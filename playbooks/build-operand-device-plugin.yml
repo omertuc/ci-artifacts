@@ -1,7 +1,0 @@
----
-- name: Build device-plugin operand image on the local cluster
-  hosts: localhost
-  connection: local
-  gather_facts: true
-  roles:
-    - role: build-operand-device-plugin

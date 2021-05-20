@@ -1,2 +1,0 @@
----
-build_operand_image_builder: roles/build-operand-toolkit/files/image_builder.yml

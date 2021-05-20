@@ -1,4 +1,0 @@
----
-dependencies:
-  - role: check_deps
-  - role: build-operand-prepare

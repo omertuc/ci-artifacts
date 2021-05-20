@@ -1,3 +1,0 @@
----
-build_operand_namespace_deployment: roles/build-operand-prepare/files/namespace.yml
-build_operand_imagestream: roles/build-operand-prepare/files/imagestream.yml

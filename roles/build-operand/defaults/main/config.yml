@@ -1,0 +1,9 @@
+---
+build_operand_namespace: ""
+build_operand_git_repo: ""
+build_operand_git_ref: ""
+build_operand_imagestream_name: ""
+build_operand_tag: ""
+build_operand_dockerfile: ""
+build_operand_docker_context: ""
+build_operand_docker_build_args: []
