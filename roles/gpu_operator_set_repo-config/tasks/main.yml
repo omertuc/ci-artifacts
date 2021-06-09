@@ -23,10 +23,22 @@
   - name: Explain why we failed
     fail: msg="Failed because NVIDIA driver seems to be already loaded"
 
-- name: Prepare the user-provided repo list file ({{ gpu_operator_set_repo_filename }})
+- name: Prepare the user-provided repo list file ({{ gpu_operator_set_repo_repolist_filename }})
   copy:
-    src: "{{ gpu_operator_set_repo_filename }}"
+    src: "{{ gpu_operator_set_repo_repolist_filename }}"
     dest: "{{ artifact_extra_logs_dir }}/gpu-operator.dnf.repo"
+    mode: 0644
+
+- name: Prepare the user-provided TLS client-auth certificate ({{ gpu_operator_set_repo_client_auth_cert_filename }})
+  copy:
+    src: "{{ gpu_operator_set_repo_client_auth_cert_filename }}"
+    dest: "{{ artifact_extra_logs_dir }}/gpu-operator.dnf.crt"
+    mode: 0644
+
+- name: Prepare the user-provided TLS client-auth private key ({{ gpu_operator_set_repo_client_auth_key_filename }})
+  copy:
+    src: "{{ gpu_operator_set_repo_client_auth_key_filename }}"
+    dest: "{{ artifact_extra_logs_dir }}/gpu-operator.dnf.key"
     mode: 0644
 
 - name: Delete the ConfigMap if it existed
@@ -40,6 +52,8 @@
     oc create configmap repo-config
        -n gpu-operator-resources
        --from-file "{{ artifact_extra_logs_dir }}/gpu-operator.dnf.repo"
+       --from-file "{{ artifact_extra_logs_dir }}/gpu-operator.dnf.crt"
+       --from-file "{{ artifact_extra_logs_dir }}/gpu-operator.dnf.key"
 
 - name: Patch the ClusterPolicy spec.driver.repoConfig
   command: |

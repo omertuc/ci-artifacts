@@ -1,7 +1,12 @@
 ---
 # path to the file to use a repo list in the Driver container
-gpu_operator_set_repo_filename: ""
+gpu_operator_set_repo_repolist_filename: ""
 
+# path to the repo client auth client certificate in the Driver container
+gpu_operator_set_repo_client_auth_cert_filename: ""
+
+# path to the repo client auth client private key in the Driver container
+gpu_operator_set_repo_client_auth_key_filename: ""
 
 # path where the repo file will be stored in the driver container
 gpu_operator_set_repo_destdir: "/etc/distro.repos.d"
