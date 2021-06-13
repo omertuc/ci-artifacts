@@ -4,6 +4,10 @@ set -o pipefail
 set -o errexit
 set -o nounset
 
+SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+
+USE_ENTITLED_MIRROR=${USE_ENTITLED_MIRROR:-0}
+
 prepare_cluster_for_gpu_operator() {
     trap collect_must_gather ERR
 
@@ -46,6 +50,10 @@ collect_must_gather() {
 validate_gpu_operator_deployment() {
     trap collect_must_gather EXIT
 
+    if [[ ${USE_ENTITLED_MIRROR} == "1" ]]; then
+        toolbox/gpu-operator/set_repo-config.sh "${SCRIPT_DIR}"/ci_mirror.repo
+    fi
+   
     toolbox/gpu-operator/wait_deployment.sh
     toolbox/gpu-operator/run_gpu_burn.sh
 }
