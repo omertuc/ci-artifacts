@@ -11,10 +11,12 @@ spec:
     command:
     - /bin/bash
     - -xc
-    - "{{ local_ci_command }}"
+    - "mkdir /tmp/artifacts && {{ local_ci_command }}"
     image: "image-registry.openshift-image-registry.svc:5000/ci-artifacts/ci-artifacts:{{ local_ci_image_tag }}" # set by `build.yaml` ansible script
     imagePullPolicy: Always
     env:
+    - name: ARTIFACT_DIR
+      value: /tmp/artifacts
     - name: EXTRA_ANSIBLE_OPTS
       value: -e use_aws=no
     - name: KUBECONFIG
