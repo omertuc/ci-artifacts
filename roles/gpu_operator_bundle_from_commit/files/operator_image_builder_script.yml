@@ -9,33 +9,24 @@ data:
   run_operator_image_builder.sh: |
     #! /bin/bash
     set -ex
-
     echo "OPERATOR_IMAGE_NAME=${OPERATOR_IMAGE_NAME}"
-
     mkdir /work && cd /work
-
     git clone ${OPERATOR_GIT_REPO} gpu-operator -b ${OPERATOR_GIT_REF} --depth 1
-
     cd gpu-operator
-
     git show --quiet
-
     CONTAINER_FILE=./Dockerfile
     if [ -f ${CONTAINER_FILE} ]; then
       # TODO: Remove this backwards compatible code once we stop testing versions that do not use the new Makefile
       # This was merged in https://github.com/NVIDIA/gpu-operator/commit/b0e99d9e6ac8738ee335f6e866242b1c9977ea09
-
       cat <<EOF > /usr/local/bin/docker
       #! /bin/sh
       exec podman --cgroup-manager=cgroupfs "\$@"
     EOF
       chmod u+x /usr/local/bin/docker
-
       if [ "${BUILDER_FROM_IMAGE}" ]; then
         # if provided, use custom 'FROM ... as builder' image
         sed "s|FROM golang:.* as builder|FROM ${BUILDER_FROM_IMAGE} as builder|" -i ${CONTAINER_FILE}
       fi
-
       # avoid docker.io quotas ...
       sed -i 's|FROM nvidia/cuda:|FROM nvcr.io/nvidia/cuda:|' ${CONTAINER_FILE}
       make docker-build IMG=${OPERATOR_IMAGE_NAME}
@@ -50,13 +41,9 @@ data:
         CUDA_IMAGE=nvcr.io/nvidia/cuda \
         ${BUILDER_FROM_IMAGE:+BUILDER_IMAGE=${BUILDER_FROM_IMAGE}}
     fi
-
     # push the image locally
-
     AUTH="--tls-verify=false --authfile /tmp/.dockercfg"
     cp /var/run/secrets/openshift.io/push/.dockercfg /tmp
     (echo "{ \"auths\": " ; cat /var/run/secrets/openshift.io/push/.dockercfg ; echo "}") > /tmp/.dockercfg
-
     podman push $AUTH $OPERATOR_IMAGE_NAME $OPERATOR_IMAGE_NAME
-
     echo "GPU Operator built from $OPERATOR_GIT_REPO / $OPERATOR_GIT_REF and pushed to $OPERATOR_IMAGE_NAME"

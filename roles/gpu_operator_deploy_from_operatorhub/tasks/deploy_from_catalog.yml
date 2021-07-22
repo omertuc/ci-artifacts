@@ -1,8 +1,8 @@
 - name: Ensure the GPU Operator package is available
   block:
-  - name: Capture the state of the CatalogSource/certified-operators (debug)
+  - name: Capture the state of the CatalogSource/{{ gpu_operator_catalog_name }} (debug)
     command:
-      oc get -oyaml CatalogSource/certified-operators
+      oc get -oyaml CatalogSource/{{ gpu_operator_catalog_name }}
          -n openshift-marketplace
          '-ojsonpath={.status.connectionState.lastObservedState}{"\n"}'
     failed_when: false

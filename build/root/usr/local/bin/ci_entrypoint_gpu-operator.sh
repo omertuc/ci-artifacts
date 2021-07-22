@@ -8,7 +8,7 @@ prepare_cluster_for_gpu_operator() {
     trap collect_must_gather ERR
 
     ./run_toolbox.py cluster capture_environment
-    entitle.sh
+    # entitle.sh
 
     if ! ./run_toolbox.py nfd has_labels; then
         ./run_toolbox.py nfd_operator deploy_from_operatorhub
@@ -57,10 +57,11 @@ test_master_branch() {
     validate_gpu_operator_deployment --bundle=master
 }
 
-test_commit() {
+bundle_from_commit() {
     gpu_operator_git_repo="${1:-}"
     gpu_operator_git_ref="${2:-}"
-    CI_IMAGE_GPU_COMMIT_CI_IMAGE_UID="ci-image"
+    CI_IMAGE_GPU_COMMIT_CI_IMAGE_UID=${CI_IMAGE_GPU_COMMIT_CI_IMAGE_UID:-ci-image}
+    CSV_SEMVER=${CSV_SEMVER:---csv_semver=4.4.4}
 
     if [[ -z "$gpu_operator_git_repo" || -z "$gpu_operator_git_ref" ]]; then
         echo "FATAL: test_commit must receive a git repo/ref to be tested."
@@ -72,17 +73,64 @@ test_commit() {
     prepare_cluster_for_gpu_operator
 
     GPU_OPERATOR_QUAY_BUNDLE_PUSH_SECRET=${GPU_OPERATOR_QUAY_BUNDLE_PUSH_SECRET:-"/var/run/psap-entitlement-secret/openshift-psap-openshift-ci-secret.yml"}
-    GPU_OPERATOR_QUAY_BUNDLE_IMAGE_NAME=${GPU_OPERATOR_QUAY_BUNDLE_IMAGE_NAME:-"quay.io/openshift-psap/ci-artifacts"}
+    GPU_OPERATOR_QUAY_BUNDLE_IMAGE_NAME=${GPU_OPERATOR_QUAY_BUNDLE_IMAGE_NAME:-"quay.io/otuchfel/ci-artifacts"}
 
     ./run_toolbox.py gpu_operator bundle_from_commit "${gpu_operator_git_repo}" \
                                              "${gpu_operator_git_ref}" \
                                              "${GPU_OPERATOR_QUAY_BUNDLE_PUSH_SECRET}" \
                                              "${GPU_OPERATOR_QUAY_BUNDLE_IMAGE_NAME}" \
+                                             "${CSV_SEMVER}" \
                                              --tag_uid="${CI_IMAGE_GPU_COMMIT_CI_IMAGE_UID}"
+}
 
-    ./run_toolbox.py gpu_operator deploy_from_bundle "--bundle=${GPU_OPERATOR_QUAY_BUNDLE_IMAGE_NAME}:operator_bundle_gpu-operator-ci-image"
+test_commit() {
+    bundle_from_commit $@
+
+    ./run_toolbox.py gpu_operator deploy_from_bundle "--bundle=${GPU_OPERATOR_QUAY_BUNDLE_IMAGE_NAME}:operator_bundle_gpu-operator-${CI_IMAGE_GPU_COMMIT_CI_IMAGE_UID}"
 
     validate_gpu_operator_deployment
+}
+
+test_commit_upgrade() {
+    ORIGINAL_BUNDLE=${GPU_OPERATOR_QUAY_BUNDLE_IMAGE_NAME}:operator_bundle_gpu-operator-ci-image-original
+    PATCHED_BUNDLE=${GPU_OPERATOR_QUAY_BUNDLE_IMAGE_NAME}:operator_bundle_gpu-operator-ci-image-patched
+    CATALOG=${GPU_OPERATOR_QUAY_BUNDLE_IMAGE_NAME}:upgrade_catalog
+
+    CI_IMAGE_GPU_COMMIT_CI_IMAGE_UID=${CI_IMAGE_GPU_COMMIT_CI_IMAGE_UID:-ci-image-original}
+    CSV_SEMVER="--csv_semver=4.4.4"
+    bundle_from_commit $@
+
+    opm index add --bundles $ORIGINAL_BUNDLE --tag $CATALOG --mode semver
+    podman push $CATALOG
+
+    oc delete -n openshift-marketplace CatalogSource/upgrade-catalog --ignore-not-found
+    oc apply -f - << EOF 
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: upgrade-catalog
+  namespace: openshift-marketplace
+spec:
+  image: $CATALOG
+  displayName: Upgrade test catalog
+  publisher: psap
+  sourceType: grpc
+  updateStrategy:
+    registryPoll: 
+    interval: 30s
+EOF
+
+    ./run.py gpu_operator deploy_from_operatorhub --catalog=upgrade-catalog
+
+    CI_IMAGE_GPU_COMMIT_CI_IMAGE_UID=${CI_IMAGE_GPU_COMMIT_CI_IMAGE_UID:-ci-image-patched}
+    CSV_SEMVER="--semver=4.4.5"
+    bundle_from_commit $@
+
+    opm index add --bundles $ORIGINAL_BUNDLE --from-index $CATALOG --tag $CATALOG --mode semver
+    podman push $CATALOG
+
+    # TODO: Wait for InstallPlan
+    # TODO: Approve InstallPlan
 }
 
 test_operatorhub() {
@@ -135,6 +183,11 @@ case ${action} in
         ;;
     "test_commit")
         test_commit "https://github.com/NVIDIA/gpu-operator.git" master
+        exit 0
+        ;;
+    "test_commit_upgrade")
+        GPU_OPERATOR_QUAY_BUNDLE_IMAGE_NAME=${GPU_OPERATOR_QUAY_BUNDLE_IMAGE_NAME:-"quay.io/otuchfel/ci-artifacts"}
+        test_commit_upgrade $@
         exit 0
         ;;
     "test_operatorhub")

@@ -24,6 +24,8 @@ spec:
         value: "{{ gpu_operator_git_ref }}"
       - name: OPERATOR_IMAGE_NAME
         value: "{{ operator_image_name }}"
+      - name: CSV_SEMVER
+        value: "{{ gpu_operator_csv_semver }}"
       - name: IMAGESTREAM_SECRET_NAME
         value: "{{ builder_secret }}"
       - name: QUAY_BUNDLE_IMAGE_NAME
@@ -33,6 +35,10 @@ spec:
       name: operator-bundle-image-builder-script
       readOnly: true
       subPath: run_operator_bundle_image_builder.sh
+    - mountPath: /mnt/alm-examples-patch/alm-patch.yml
+      name: alm-patch
+      readOnly: true
+      subPath: alm-patch.yml
     - mountPath: /var/run/secrets/openshift.io/push
       name: builder-dockercfg-push
       readOnly: true
@@ -47,6 +53,10 @@ spec:
       defaultMode: 511
       name: operator-bundle-image-builder-script
     name: operator-bundle-image-builder-script
+  - configMap:
+      defaultMode: 0666
+      name: alm-patch
+    name: alm-patch
   - name: builder-dockercfg-push
     secret:
       defaultMode: 384

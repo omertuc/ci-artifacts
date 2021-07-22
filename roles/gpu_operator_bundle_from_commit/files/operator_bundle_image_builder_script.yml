@@ -25,25 +25,60 @@ data:
 
     CSV_FILE=bundle/manifests/gpu-operator.clusterserviceversion.yaml
 
+    rm -rf /work
     mkdir /work && cd /work
 
-    git clone ${OPERATOR_GIT_REPO} gpu-operator -b ${OPERATOR_GIT_REF} --depth 1
+    CLONE_DIR=gpu-operator
+    rm -rf ${CLONE_DIR}
+    git clone ${OPERATOR_GIT_REPO} ${CLONE_DIR} -b ${OPERATOR_GIT_REF} --depth 1
 
-    cd gpu-operator
+    cd ${CLONE_DIR}
 
     git show --quiet
     GIT_VERSION=$(git rev-parse --short HEAD)
 
     mv $CSV_FILE ${CSV_FILE}.orig
-    cat ${CSV_FILE}.orig | yq \
-      | jq .metadata.annotations.containerImage=\"$OPERATOR_IMAGE_NAME\" \
-      | jq .metadata.name=\"gpu-operator-certified-git-$GIT_VERSION\" \
-      | jq .spec.version=\"9.9.9-git$GIT_VERSION\" \
-      | jq .spec.install.spec.deployments[0].spec.template.spec.containers[0].image=\"$OPERATOR_IMAGE_NAME\" \
-      > $CSV_FILE
-
+    yq --yaml-roundtrip \
+      --arg OPERATOR_IMAGE_NAME "$OPERATOR_IMAGE_NAME" \
+      --arg GIT_VERSION "$GIT_VERSION" \
+      --arg CSV_SEMVER "$CSV_SEMVER" \
+      ' .metadata.annotations.containerImage=$OPERATOR_IMAGE_NAME
+      | .metadata.name="gpu-operator-certified-"+$CSV_SEMVER+"-git"+$GIT_VERSION
+      | .spec.version=$CSV_SEMVER+"-git"+$GIT_VERSION
+      | .spec.install.spec.deployments[0].spec.template.spec.containers[0].image=$OPERATOR_IMAGE_NAME' \
+      ${CSV_FILE}.orig > $CSV_FILE
     rm ${CSV_FILE}.orig
+
     cat $CSV_FILE | grep containerImage
+
+    cat /mnt/alm-examples-patch/alm-patch.yml
+
+    # Generate a file combining /mnt/alm-patch.yml and the alm_examples in the CSV
+    yq --slurpfile patch /mnt/alm-examples-patch/alm-patch.yml '
+    # recursively combines two composite JSON entities by concatenating arrays at the same position
+    # taken from https://stackoverflow.com/a/53666584/791430
+    def meld(a; b):
+      a as $a | b as $b
+      | if ($a|type) == "object" and ($b|type) == "object"
+        then reduce ([$a,$b]|add|keys_unsorted[]) as $k ({}; 
+          .[$k] = meld( $a[$k]; $b[$k]) )
+        elif ($a|type) == "array" and ($b|type) == "array"
+        then $a+$b
+        elif $b == null then $a
+        else $b
+        end;
+
+    [meld(.metadata.annotations."alm-examples" | fromjson[0]; $patch[0])]' ${CSV_FILE} > patched_alm_examples.yml
+
+    cat patched_alm_examples.yml
+    cat $CSV_FILE
+
+    # Assign the patched alm examples file back into the CSV annotation
+    mv $CSV_FILE ${CSV_FILE}.orig
+    yq --yaml-roundtrip --rawfile alm_examples patched_alm_examples.yml '.metadata.annotations."alm-examples" = $alm_examples' ${CSV_FILE}.orig > ${CSV_FILE}
+    rm ${CSV_FILE}.orig
+
+    cat $CSV_FILE
 
     # build
 

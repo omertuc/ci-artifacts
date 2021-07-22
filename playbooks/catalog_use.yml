@@ -1,0 +1,7 @@
+---
+- name: Add a catalog source to a cluster
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+  - role: catalog_use

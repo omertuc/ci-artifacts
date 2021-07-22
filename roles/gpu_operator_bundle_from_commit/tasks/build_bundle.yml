@@ -10,13 +10,22 @@
 - name: Delete the kubeconfig secret, if it exists
   command: oc delete secret -n gpu-operator-ci kubeconfig-secret --ignore-not-found=true
 
+- name: Ensure that the quay image name is set
+  command: test -z "{{ gpu_operator_commit_quay_image_name }}"
+  register: image_name_empty
+  failed_when: image_name_empty.rc == 0
+
 - name: Ensure that quay secret file path is set
-  command: test -f "{{ gpu_operator_commit_quay_push_secret }}"
+  command: test -z "{{ gpu_operator_commit_quay_push_secret }}"
+  register: secret_var_empty
+  failed_when: secret_var_empty.rc == 0
 
 - name: Ensure that quay secret file exists
-  command: test -z "{{ gpu_operator_commit_quay_image_name }}"
-  register: test_quay_image_name
-  failed_when: test_quay_image_name.rc == 0
+  command: test -f "{{ gpu_operator_commit_quay_push_secret }}"
+
+- name: Ensure that alm patch file exists
+  command: test -f "{{ gpu_operator_alm_examples_patch_file }}"
+  when: gpu_operator_alm_examples_patch_file != ""
 
 - name: Get quay.io secret name
   command:
@@ -30,6 +39,20 @@
 - name: Create quay.io secret
   command:
     oc apply -f "{{ gpu_operator_commit_quay_push_secret }}" -n gpu-operator-ci
+
+- name: Delete previous configmap
+  command:
+    oc delete configmap alm-patch -n gpu-operator-ci --ignore-not-found=true
+
+- name: Create patch configmap
+  command:
+    oc create configmap alm-patch -n gpu-operator-ci --from-file alm-patch.yml={{ gpu_operator_alm_examples_patch_file }}
+  when: gpu_operator_alm_examples_patch_file != ""
+
+- name: Create an empty patch configmap when none is provided
+  shell:
+    oc create configmap alm-patch -n gpu-operator-ci --from-file alm-patch.yml=<(echo '{}')
+  when: gpu_operator_alm_examples_patch_file == ""
 
 - name: Create kubeconfig secret
   command:

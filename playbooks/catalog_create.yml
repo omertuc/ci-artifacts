@@ -1,0 +1,7 @@
+---
+- name: Create an empty catalog
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  roles:
+  - role: catalog_create

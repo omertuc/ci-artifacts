@@ -59,7 +59,7 @@ class GPUOperator:
         return PlaybookRun("gpu_operator_deploy_from_operatorhub", opts)
 
     @staticmethod
-    def deploy_from_operatorhub(version=None, channel=None, installPlan="Manual"):
+    def deploy_from_operatorhub(version=None, channel=None, installPlan="Manual", catalog="certified-operators"):
         """
         Deploys the GPU operator from OperatorHub
 
@@ -74,6 +74,12 @@ class GPUOperator:
             opts["gpu_operator_operatorhub_version"] = version
             print(
                 f"Deploying the GPU Operator from OperatorHub using version '{version}'."
+            )
+
+        if catalog is not None:
+            opts["gpu_operator_catalog_name"] = catalog
+            print(
+                f"Deploying the GPU Operator from catalog '{version}'."
             )
 
         if channel is not None:
@@ -173,12 +179,17 @@ class GPUOperator:
         git_ref,
         quay_push_secret,
         quay_image_name,
+        csv_semver=None,
         tag_uid=None,
+        alm_examples_patch_file=None,
     ):
         """
         Build an image of the GPU Operator from sources (<git repository> <git reference>)
         and push it to quay.io <quay_image_image>:operator_bundle_gpu-operator-<gpu_operator_image_tag_uid>
         using the <quay_push_secret> credentials.
+
+        If [alm_examples_patch_file] is given, patch the bundle's CSV alm-examples annotation by
+        merging it with the contents of the file provided as [alm_examples_patch_file].
 
         Example parameters - https://github.com/NVIDIA/gpu-operator.git master /path/to/quay_secret.yaml quay.io/org/image_name
 
@@ -189,7 +200,11 @@ class GPUOperator:
             git_ref: Git ref to bundle
             quay_push_secret: A file Kube Secret YAML file with `.dockerconfigjson` data and type kubernetes.io/dockerconfigjson
             quay_image_image: The quay repo to push to
-            tag_uid: The image tag suffix to use.
+            csv_semver: The version number prefix for the CSV .spec.version stanza. e.g. 9.9.9
+            csv_replaces_semver: The version number prefix for the CSV .spec.replaces stanza. e.g. 9.9.8
+            gpu_operator_image_tag_uid: The image tag suffix to use
+            tag_uid: The image tag suffix to use
+            alm_examples_patch_file: alm-examples patch
         """
         if tag_uid is None:
             tag_uid = secrets.token_hex(4)
@@ -201,5 +216,11 @@ class GPUOperator:
             "gpu_operator_commit_quay_push_secret": quay_push_secret,
             "gpu_operator_commit_quay_image_name": quay_image_name,
         }
+
+        if csv_semver is not None:
+            opts["gpu_operator_csv_semver"] = csv_semver
+
+        if alm_examples_patch_file is not None:
+            opts["gpu_operator_alm_examples_patch_file"] = alm_examples_patch_file
 
         return PlaybookRun("gpu_operator_bundle_from_commit", opts)
