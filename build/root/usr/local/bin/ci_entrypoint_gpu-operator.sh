@@ -120,7 +120,7 @@ spec:
     interval: 30s
 EOF
 
-    ./run.py gpu_operator deploy_from_operatorhub --catalog=upgrade-catalog
+    ./run_toolbox.py gpu_operator deploy_from_operatorhub --catalog=upgrade-catalog
 
     CI_IMAGE_GPU_COMMIT_CI_IMAGE_UID=${CI_IMAGE_GPU_COMMIT_CI_IMAGE_UID:-ci-image-patched}
     CSV_SEMVER="--semver=4.4.5"
