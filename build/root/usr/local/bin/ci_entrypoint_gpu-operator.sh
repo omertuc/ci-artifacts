@@ -80,7 +80,8 @@ bundle_from_commit() {
                                              "${GPU_OPERATOR_QUAY_BUNDLE_PUSH_SECRET}" \
                                              "${GPU_OPERATOR_QUAY_BUNDLE_IMAGE_NAME}" \
                                              "${CSV_SEMVER}" \
-                                             --tag_uid="${CI_IMAGE_GPU_COMMIT_CI_IMAGE_UID}"
+                                             --tag_uid="${CI_IMAGE_GPU_COMMIT_CI_IMAGE_UID}" \
+                                             ${POLICY_PATCH:-}
 }
 
 test_commit() {
@@ -103,6 +104,8 @@ test_commit_upgrade() {
     opm index add --bundles $ORIGINAL_BUNDLE --tag $CATALOG --mode semver
     podman push $CATALOG
 
+    sleep 60
+
     oc delete -n openshift-marketplace CatalogSource/upgrade-catalog --ignore-not-found
     oc apply -f - << EOF 
 apiVersion: operators.coreos.com/v1alpha1
@@ -112,23 +115,28 @@ metadata:
   namespace: openshift-marketplace
 spec:
   image: $CATALOG
-  displayName: Upgrade test catalog
-  publisher: psap
+  displayName: Upgrades
+  publisher: Red Hat
   sourceType: grpc
   updateStrategy:
     registryPoll: 
-    interval: 30s
+      interval: 30s
 EOF
 
-    ./run_toolbox.py gpu_operator deploy_from_operatorhub --catalog=upgrade-catalog
+    ./run_toolbox.py gpu_operator deploy_from_operatorhub --catalog=upgrade-catalog --version=
+    validate_gpu_operator_deployment
 
     CI_IMAGE_GPU_COMMIT_CI_IMAGE_UID=${CI_IMAGE_GPU_COMMIT_CI_IMAGE_UID:-ci-image-patched}
-    CSV_SEMVER="--semver=4.4.5"
+    CSV_SEMVER="--csv_semver=4.4.5"
+    POLICY_PATCH="--alm_examples_patch_file=/home/omer/repos/ci-artifacts/patch.yml"
     bundle_from_commit $@
 
     opm index add --bundles $ORIGINAL_BUNDLE --from-index $CATALOG --tag $CATALOG --mode semver
     podman push $CATALOG
 
+    sleep 300
+
+    validate_gpu_operator_deployment
     # TODO: Wait for InstallPlan
     # TODO: Approve InstallPlan
 }
